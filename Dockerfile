@@ -1,14 +1,33 @@
-FROM node:lts-buster
-USER root
-RUN apt-get update && \
-    apt-get install -y ffmpeg webp git && \
-    apt-get upgrade -y && \
-    rm -rf /var/lib/apt/lists/*
-USER node
-RUN git clone https://github.com/NaCkS-ai/Cyberia-MD /home/node/Cyberia-MD
-WORKDIR /home/node/Cyberia-MD
-RUN chmod -R 777 /home/node/Cyberia-MD/
-RUN yarn install --network-concurrency 1
-EXPOSE 7860
-ENV NODE_ENV=production
-CMD ["npm", "start"]
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+     - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Start application
+      run: npm start
